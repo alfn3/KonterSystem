@@ -4,10 +4,9 @@
 @section('subtitle', 'Analisis mendalam nilai aset, produk terpopuler (fast moving), produk stagnan (slow moving), dan risiko kehabisan stok.')
 
 @section('content')
-<div class="space-y-6">
 
     <!-- Header Actions & Branch Selector (Styled as Premium Banner) -->
-    <div class="greeting-banner mb-6 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
         <!-- Left: Branch & Date selection -->
         <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto" style="position:relative;z-index:1;">
             <div class="flex items-center gap-3">
@@ -36,6 +35,23 @@
             </a>
         </div>
     </div>
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div class="h-64 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-64 bg-slate-50 border border-slate-100 rounded-xl"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8 space-y-6" style="margin-top: 0;">
+
 
     <!-- KPI Analytics Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -246,7 +262,9 @@
             </div>
         </div>
     </div>
-</div>
+
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')
@@ -256,6 +274,7 @@
         const selectedValue = selector.value;
         const dateEl = document.getElementById('date-selector');
         const dateValue = dateEl ? dateEl.value : "{{ $selectedDate }}";
+        if (typeof window.triggerGlobalLoading === 'function') window.triggerGlobalLoading();
         window.location.href = "{{ route('inventory.analytics') }}?branch=" + encodeURIComponent(selectedValue) + "&date=" + encodeURIComponent(dateValue);
     }
 
@@ -264,7 +283,16 @@
         const branchValue = selector ? selector.value : "{{ $selectedBranch }}";
         const dateEl = document.getElementById('date-selector');
         const dateValue = dateEl ? dateEl.value : "";
+        if (typeof window.triggerGlobalLoading === 'function') window.triggerGlobalLoading();
         window.location.href = "{{ route('inventory.analytics') }}?branch=" + encodeURIComponent(branchValue) + "&date=" + encodeURIComponent(dateValue);
     }
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
 </script>
 @endpush

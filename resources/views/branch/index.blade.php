@@ -42,12 +42,12 @@
     </section>
 
     <!-- Filters & Actions (Styled as Premium Banner) -->
-    <div class="greeting-banner mb-6 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
         <div class="flex flex-wrap items-center gap-4 w-full sm:w-auto" style="position:relative;z-index:1;">
-            <form action="{{ route('branch.index') }}" method="GET" class="flex flex-wrap items-center gap-3 flex-1 m-0 p-0">
+            <form action="{{ route('branch.index') }}" method="GET" class="flex flex-wrap items-center gap-3 flex-1 m-0 p-0" id="filter-form" onsubmit="event.preventDefault(); fetchIndexData(this.action + '?' + new URLSearchParams(new FormData(this)).toString());">
                 <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/95 border border-white/20 rounded-lg shadow-sm shrink-0">
                     <span class="material-symbols-outlined text-indigo-600 text-sm">map</span>
-                    <select name="wilayah" onchange="this.form.submit()" class="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer">
+                    <select name="wilayah" onchange="fetchIndexData('{{ route('branch.index') }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer">
                         <option value="Semua Wilayah" {{ request('wilayah') === 'Semua Wilayah' ? 'selected' : '' }}>Semua Wilayah</option>
                         <option value="Jawa Barat" {{ request('wilayah') === 'Jawa Barat' ? 'selected' : '' }}>Jawa Barat</option>
                         <option value="DKI Jakarta" {{ request('wilayah') === 'DKI Jakarta' ? 'selected' : '' }}>DKI Jakarta</option>
@@ -56,7 +56,7 @@
                 </div>
                 <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/95 border border-white/20 rounded-lg shadow-sm shrink-0">
                     <span class="material-symbols-outlined text-indigo-600 text-sm">wifi</span>
-                    <select name="status" onchange="this.form.submit()" class="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer">
+                    <select name="status" onchange="fetchIndexData('{{ route('branch.index') }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer">
                         <option value="Semua Status" {{ request('status') === 'Semua Status' ? 'selected' : '' }}>Semua Status</option>
                         <option value="Online" {{ request('status') === 'Online' ? 'selected' : '' }}>Online</option>
                         <option value="Offline" {{ request('status') === 'Offline' ? 'selected' : '' }}>Offline</option>
@@ -64,7 +64,7 @@
                 </div>
                 <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/95 border border-white/20 rounded-lg shadow-sm shrink-0">
                     <span class="material-symbols-outlined text-indigo-600 text-sm">sort</span>
-                    <select name="sort" onchange="this.form.submit()" class="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer">
+                    <select name="sort" onchange="fetchIndexData('{{ route('branch.index') }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer">
                         <option value="Terbaru" {{ request('sort') === 'Terbaru' ? 'selected' : '' }}>Terbaru</option>
                         <option value="Revenue Tertinggi" {{ request('sort') === 'Revenue Tertinggi' ? 'selected' : '' }}>Revenue Tertinggi</option>
                         <option value="Stok Terendah" {{ request('sort') === 'Stok Terendah' ? 'selected' : '' }}>Stok Terendah</option>
@@ -78,6 +78,18 @@
             </button>
         </div>
     </div>
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-xl"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8 space-y-6" style="margin-top: 0;">
+
 
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="branch-cards-grid">
@@ -89,9 +101,6 @@
                     <div class="flex flex-col min-w-0">
                         <div class="flex items-center gap-2">
                             <h4 class="text-base font-extrabold text-slate-900 truncate leading-snug">{{ $branch['name'] }}</h4>
-                            <button onclick="openEditBranchModal({{ json_encode($branch) }})" class="text-slate-400 hover:text-slate-900 border-none bg-transparent cursor-pointer flex items-center p-0.5 rounded hover:bg-slate-200 transition-colors" title="Edit Nama & Agent ID">
-                                <span class="material-symbols-outlined text-sm">edit</span>
-                            </button>
                         </div>
                         <span class="text-[11px] text-slate-400 font-semibold mt-1 flex items-center gap-1">
                             <span class="material-symbols-outlined text-xs">location_on</span>
@@ -176,8 +185,8 @@
                 <!-- Card Footer Action -->
                 <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between group-hover:bg-indigo-50/50 transition-colors">
                     <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Operasional</span>
-                    <a href="{{ route('branch.show', $branch['id']) }}" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-sm">
-                        <span>Detail Cabang</span>
+                    <a href="{{ route('branch.show', $branch['id']) }}" onclick="if(typeof window.triggerGlobalLoading === 'function') window.triggerGlobalLoading(true);" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-indigo-700 transition-all shadow-sm">
+                        <span>Detail</span>
                         <span class="material-symbols-outlined text-xs">chevron_right</span>
                     </a>
                 </div>
@@ -251,42 +260,8 @@
         </div>
     </div>
 
-    <!-- Edit Branch Modal -->
-    <div id="edit-branch-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-slate-500">edit_road</span>
-                    Edit Informasi Cabang
-                </h3>
-                <button onclick="closeEditBranchModal()" class="material-symbols-outlined text-slate-400 hover:text-slate-600 cursor-pointer border-none bg-transparent outline-none">close</button>
-            </div>
-            <form id="edit-branch-form" action="" method="POST" class="p-6 space-y-4">
-                @csrf
-                @method('PUT')
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Konter / Cabang</label>
-                    <input type="text" name="name" id="edit_branch_name" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs font-medium text-slate-700 outline-none focus:ring-1 focus:ring-slate-900">
-                </div>
 
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Agent ID</label>
-                    <input type="text" name="agent_id" id="edit_branch_agent_id" placeholder="e.g. operator1 (opsional)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs font-medium text-slate-700 outline-none focus:ring-1 focus:ring-slate-900">
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Alamat Cabang</label>
-                    <input type="text" name="address" id="edit_branch_address" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs font-medium text-slate-700 outline-none focus:ring-1 focus:ring-slate-900">
-                </div>
-
-                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
-                    <button type="button" onclick="closeEditBranchModal()" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold uppercase cursor-pointer">Batal</button>
-                    <button type="submit" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold uppercase cursor-pointer">Perbarui</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')
@@ -297,19 +272,7 @@
     function closeAddBranchModal() {
         document.getElementById('add-branch-modal').classList.add('hidden');
     }
-    function openEditBranchModal(branch) {
-        document.getElementById('edit_branch_name').value = branch.name;
-        document.getElementById('edit_branch_agent_id').value = branch.agent_id || '';
-        document.getElementById('edit_branch_address').value = branch.address;
-        
-        const form = document.getElementById('edit-branch-form');
-        form.action = `/operasional/cabang/${branch.id}`;
-        
-        document.getElementById('edit-branch-modal').classList.remove('hidden');
-    }
-    function closeEditBranchModal() {
-        document.getElementById('edit-branch-modal').classList.add('hidden');
-    }
+
 
     function pollBranchStatus() {
         fetch('/api/cabang/status')
@@ -379,5 +342,45 @@
         pollBranchStatus();
         setInterval(pollBranchStatus, 10000);
     });
+
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
+
+    function fetchIndexData(url) {
+        window.customTriggerLoading();
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newContent = doc.getElementById('main-content');
+                if (newContent) {
+                    document.getElementById('main-content').innerHTML = newContent.innerHTML;
+                }
+                
+                // Also update the summary section if needed
+                const newSummary = doc.querySelector('section.mb-6.mt-6');
+                if (newSummary) {
+                    document.querySelector('section.mb-6.mt-6').innerHTML = newSummary.innerHTML;
+                }
+
+                window.history.pushState({path: url}, '', url);
+                window.customRestoreLoading();
+                
+                // Restart polling if elements were replaced
+                pollBranchStatus();
+            })
+            .catch(err => {
+                console.error('AJAX fetch failed:', err);
+                window.location.href = url; // Fallback to full reload
+            });
+    }
 </script>
 @endpush

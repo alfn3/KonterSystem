@@ -624,17 +624,6 @@
         <!-- Content Canvas -->
         <div class="p-6" style="min-height: calc(100vh - 60px);">
 
-            <!-- Page Header -->
-            <div class="page-header mb-5">
-                <h1 class="page-title">
-                    @hasSection('page_title')
-                        @yield('page_title')
-                    @else
-                        @yield('title')
-                    @endif
-                </h1>
-                <p class="page-subtitle">@yield('subtitle', 'Keterangan halaman')</p>
-            </div>
 
             <!-- Flash messages -->
             @if(session('success'))
@@ -668,7 +657,47 @@
                 </div>
             @endif
 
-            @yield('content')
+            <!-- Page Header -->
+            <div id="page-header" class="page-header mb-5">
+                <h1 class="page-title">
+                    @hasSection('page_title')
+                        @yield('page_title')
+                    @else
+                        @yield('title')
+                    @endif
+                </h1>
+                <p class="page-subtitle">@yield('subtitle', 'Keterangan halaman')</p>
+            </div>
+
+            <!-- Page Header Skeleton -->
+            <div id="page-header-skeleton" class="page-header mb-5 hidden animate-pulse flex flex-col gap-2">
+                <div class="h-6 bg-slate-200 rounded-md w-1/3"></div>
+                <div class="h-3 bg-slate-200 rounded-md w-1/4"></div>
+            </div>
+
+            <div id="page-content-wrapper" class="transition-opacity duration-200">
+                @yield('content')
+            </div>
+
+            <!-- Global Skeleton Loader (Hidden by Default) -->
+            <div id="global-skeleton" class="hidden w-full animate-pulse">
+                <!-- Generic Skeleton Dashboard Layout -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="h-[120px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                    <div class="h-[120px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                    <div class="h-[120px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                    <div class="h-[120px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-2 space-y-6">
+                        <div class="h-[300px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                        <div class="h-[200px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="h-[525px] bg-white border border-slate-100 rounded-xl shadow-sm"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -692,6 +721,83 @@
                 if (arrow) arrow.style.transform = 'rotate(180deg)';
             }
         }
+
+        // Global Skeleton Logic
+        window.triggerGlobalLoading = function(forceGlobal = false) {
+            if (!forceGlobal && typeof window.customTriggerLoading === 'function') {
+                window.customTriggerLoading();
+                return;
+            }
+
+            // If the current page has a custom skeleton (like branch dashboard), don't show the global one.
+            if (!forceGlobal && document.getElementById('dashboard-skeleton')) {
+                // Let the page handle its own skeleton if it has a showSkeletonAndNavigate function
+                if (typeof showSkeletonAndNavigate === 'function') {
+                    showSkeletonAndNavigate();
+                } else {
+                    document.getElementById('page-content-wrapper').style.display = 'none';
+                    document.getElementById('dashboard-skeleton').classList.remove('hidden');
+                }
+                return;
+            }
+            
+            const wrapper = document.getElementById('page-content-wrapper');
+            const skeleton = document.getElementById('global-skeleton');
+            const header = document.getElementById('page-header');
+            const headerSkeleton = document.getElementById('page-header-skeleton');
+            
+            if (wrapper && skeleton) {
+                wrapper.style.display = 'none';
+                skeleton.classList.remove('hidden');
+            }
+            if (header && headerSkeleton) {
+                header.classList.add('hidden');
+                headerSkeleton.classList.remove('hidden');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapper = document.getElementById('page-content-wrapper');
+            const skeleton = document.getElementById('global-skeleton');
+
+            // Intercept standard navigation links
+            const links = document.querySelectorAll('a[href]:not([target="_blank"]):not([href^="#"]):not([href^="javascript"])');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Ignore clicks with modifier keys (new tab/window)
+                    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+                    
+                    // Trigger skeleton if the link is not just an empty hash
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && href !== '') {
+                        const isSidebar = this.closest('aside') !== null;
+                        window.triggerGlobalLoading(isSidebar);
+                    }
+                });
+            });
+
+            // Intercept form submissions
+            const forms = document.querySelectorAll('form:not([target="_blank"])');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    // Note: forms within the page usually trigger local skeletons unless otherwise needed
+                    window.triggerGlobalLoading(false);
+                });
+            });
+
+            // Handle back button caching (bfcache)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    if (typeof window.customRestoreLoading === 'function') {
+                        window.customRestoreLoading();
+                    }
+                    if (wrapper && skeleton) {
+                        wrapper.style.display = 'block';
+                        skeleton.classList.add('hidden');
+                    }
+                }
+            });
+        });
     </script>
     @stack('scripts')
 </body>

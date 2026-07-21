@@ -11,7 +11,7 @@
         $bannerClass = $isDanger ? 'alert-danger' : 'alert-success';
         $iconName = $isDanger ? 'warning' : 'check_circle';
     @endphp
-    <section id="greeting-alert" class="greeting-banner {{ $bannerClass }} mb-6">
+    <section id="greeting-alert" class="greeting-banner {{ $bannerClass }} mb-6 rounded-xl relative z-10">
         <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:10px;flex-shrink:0;">
             <span class="material-symbols-outlined text-white text-2xl"
                   style="font-variation-settings:'FILL' 1;display:block;">{{ $iconName }}</span>
@@ -32,6 +32,20 @@
             </button>
         </div>
     </section>
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+        </div>
+        <div class="h-64 bg-slate-50 border border-slate-100 rounded-xl"></div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
+
 
     <!-- Metrics Grid (Dashboard Style) -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
@@ -203,6 +217,8 @@
         </div>
     </div>
 
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')
@@ -213,6 +229,14 @@
     function closeAddAuditModal() {
         document.getElementById('add-audit-modal').classList.add('hidden');
     }
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
 </script>
 @endpush
 

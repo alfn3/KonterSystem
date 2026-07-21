@@ -109,6 +109,7 @@ Route::put('/api/pengeluaran/{id}', [ApiTransactionController::class, 'updateExp
 Route::delete('/api/pengeluaran/{id}', [ApiTransactionController::class, 'deleteExpense']);
 Route::post('/api/closing', [ApiTransactionController::class, 'storeClosing']);
 Route::get('/api/closing', [ApiTransactionController::class, 'getClosing']);
+Route::delete('/api/closing', [ApiTransactionController::class, 'deleteClosing']);
 Route::get('/api/saldo-elektrik', [ApiTransactionController::class, 'getSaldoElektrik']);
 Route::post('/api/attendance', [ApiTransactionController::class, 'storeAttendance']);
 Route::get('/api/attendance', [ApiTransactionController::class, 'getAttendance']);
@@ -117,5 +118,6 @@ Route::post('/api/pelanggan', [ApiTransactionController::class, 'storeCustomer']
 Route::put('/api/pelanggan/{id}', [ApiTransactionController::class, 'updateCustomer']);
 Route::delete('/api/pelanggan/{id}', [ApiTransactionController::class, 'deleteCustomer']);
 Route::get('/api/cabang/status', [ApiTransactionController::class, 'getBranchStatuses']);
+Route::get('/api/karyawan', [ApiTransactionController::class, 'getEmployees']);
 
 

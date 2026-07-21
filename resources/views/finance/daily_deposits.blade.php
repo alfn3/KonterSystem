@@ -6,7 +6,7 @@
 @section('content')
 
     <!-- Premium Banner for Filter -->
-    <div class="greeting-banner mb-6 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
         <form action="{{ route('daily-deposits.index') }}" method="GET" class="flex flex-wrap items-center gap-3 w-full sm:w-auto m-0" style="position:relative;z-index:1;">
             
             <div class="flex items-center gap-2">
@@ -32,6 +32,19 @@
             
         </form>
     </div>
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl"></div>
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl"></div>
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl"></div>
+            <div class="h-48 bg-slate-50 border border-slate-100 rounded-2xl"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+
 
     <!-- Alert Messages -->
     @if(session('success'))
@@ -322,6 +335,16 @@
                 amountInput.value = formatRupiah(total.toString());
             }
         }
-    </script>
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
+</script>
 
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection

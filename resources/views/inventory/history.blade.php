@@ -7,8 +7,8 @@
 
 
     <!-- Filter Controls (Premium Banner) -->
-    <div class="greeting-banner mb-6" style="padding: 20px;">
-        <form action="{{ route('inventory.history') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end m-0 p-0 w-full" style="position:relative;z-index:1;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10" style="padding: 20px;">
+        <form action="{{ route('inventory.history') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end m-0 p-0 w-full" style="position:relative;z-index:1;" id="filter-form" onsubmit="event.preventDefault(); fetchHistoryData(this.action + '?' + new URLSearchParams(new FormData(this)).toString());">
             <div class="md:col-span-4">
                 <label class="block text-[10px] font-extrabold text-white/80 uppercase tracking-widest mb-1.5">Cari Transaksi</label>
                 <div class="relative shadow-sm rounded-lg">
@@ -20,7 +20,7 @@
             <div class="md:col-span-4">
                 <label class="block text-[10px] font-extrabold text-white/80 uppercase tracking-widest mb-1.5">Tipe Pergerakan</label>
                 <div class="relative shadow-sm rounded-lg">
-                    <select name="type" onchange="this.form.submit()" class="appearance-none w-full px-3 py-2 pr-8 bg-white/95 border border-white/20 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer h-[34px]">
+                    <select name="type" onchange="fetchHistoryData('{{ route('inventory.history') }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="appearance-none w-full px-3 py-2 pr-8 bg-white/95 border border-white/20 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer h-[34px]">
                         <option value="Semua Tipe" {{ request('type') == 'Semua Tipe' ? 'selected' : '' }}>Semua Tipe</option>
                         <option value="Restok" {{ request('type') == 'Restok' ? 'selected' : '' }}>Restok</option>
                         <option value="Penjualan" {{ request('type') == 'Penjualan' ? 'selected' : '' }}>Penjualan</option>
@@ -34,17 +34,20 @@
             <div class="md:col-span-3">
                 <label class="block text-[10px] font-extrabold text-white/80 uppercase tracking-widest mb-1.5">Tanggal</label>
                 <div class="relative shadow-sm rounded-lg">
-                    <input type="date" name="date" value="{{ request('date') }}" onchange="this.form.submit()" class="w-full px-3 py-1.5 bg-white/95 border border-white/20 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer h-[34px]">
+                    <input type="date" name="date" value="{{ request('date') }}" onchange="fetchHistoryData('{{ route('inventory.history') }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="w-full px-3 py-1.5 bg-white/95 border border-white/20 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer h-[34px]">
                 </div>
             </div>
 
             <div class="md:col-span-1">
-                <button type="button" onclick="window.location.reload()" class="w-full flex items-center justify-center bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-lg p-2 transition-all shadow-sm cursor-pointer h-[34px] backdrop-blur-sm" title="Refresh Data">
+                <button type="button" onclick="fetchHistoryData(window.location.href);" class="w-full flex items-center justify-center bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-lg p-2 transition-all shadow-sm cursor-pointer h-[34px] backdrop-blur-sm" title="Refresh Data">
                     <span class="material-symbols-outlined text-base">refresh</span>
                 </button>
             </div>
         </form>
     </div>
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+
 
     <!-- Data Table Card -->
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -188,4 +191,48 @@
         @endif
     </div>
 
+
+    </div> <!-- End Main Content Wrapper -->
+
+    <!-- Custom Skeleton Wrapper -->
+    <div id="custom-page-skeleton" class="hidden bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8 space-y-6" style="margin-top: 0;">
+        <div class="animate-pulse space-y-6">
+            <div class="h-[500px] bg-slate-100 rounded-xl w-full"></div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
+
+    function fetchHistoryData(url) {
+        window.customTriggerLoading();
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newContent = doc.getElementById('main-content');
+                if (newContent) {
+                    document.getElementById('main-content').innerHTML = newContent.innerHTML;
+                }
+                
+                window.history.pushState({path: url}, '', url);
+                window.customRestoreLoading();
+            })
+            .catch(err => {
+                console.error('AJAX fetch failed:', err);
+                window.location.href = url; // Fallback
+            });
+    }
+</script>
+@endpush

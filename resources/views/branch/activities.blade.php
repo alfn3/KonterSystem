@@ -12,7 +12,7 @@
 
 @section('content')
 <!-- Header Actions & Switcher (Premium Banner) -->
-<div class="greeting-banner mb-6 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
+<div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
     <div class="flex items-center gap-3 w-full sm:w-auto" style="position:relative;z-index:1;">
         <a href="{{ route('branch.show', [$branch->id, 'date' => $selectedDate]) }}" class="flex items-center gap-1.5 bg-white/20 border border-white/30 text-white px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-white/30 transition-all cursor-pointer h-[34px] backdrop-blur-sm shadow-sm">
             <span class="material-symbols-outlined text-base">arrow_back</span> Kembali
@@ -27,16 +27,16 @@
     </div>
     <div class="flex flex-wrap items-center gap-3" style="position:relative;z-index:1;">
         <!-- Date Picker (Pickdate) -->
-        <form action="{{ route('branch.activities', $branch->id) }}" method="GET" class="flex items-center gap-1.5 m-0 p-0" id="date-filter-form">
+        <form action="{{ route('branch.activities', $branch->id) }}" method="GET" class="flex items-center gap-1.5 m-0 p-0" id="date-filter-form" onsubmit="event.preventDefault(); fetchActivitiesData(this.action + '?' + new URLSearchParams(new FormData(this)).toString());">
             <input type="hidden" name="search" value="{{ $search }}">
             <input type="hidden" name="type" value="{{ $type }}">
             <div class="relative shadow-sm rounded-lg">
-                <input type="date" name="date" value="{{ $selectedDate }}" onchange="this.form.submit()" class="bg-white/95 border border-white/20 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer">
+                <input type="date" name="date" value="{{ $selectedDate }}" onchange="fetchActivitiesData('{{ route('branch.activities', $branch->id) }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="bg-white/95 border border-white/20 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer">
             </div>
         </form>
 
         <div class="relative shadow-sm rounded-lg">
-            <select onchange="window.location.href='/operasional/cabang/' + this.value + '/aktivitas?date={{ $selectedDate }}&search={{ urlencode($search) }}&type={{ urlencode($type) }}'" class="appearance-none bg-white/95 border border-white/20 rounded-lg px-4 py-1.5 pr-10 text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer w-44 h-[34px]">
+            <select onchange="fetchActivitiesData('/operasional/cabang/' + this.value + '/aktivitas?date={{ $selectedDate }}&search={{ urlencode($search) }}&type={{ urlencode($type) }}');" class="appearance-none bg-white/95 border border-white/20 rounded-lg px-4 py-1.5 pr-10 text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer w-44 h-[34px]">
                 @foreach($branchesList as $b)
                     <option value="{{ $b->id }}" {{ $b->id == $branch->id ? 'selected' : '' }}>{{ $b->name }}</option>
                 @endforeach
@@ -48,15 +48,18 @@
             <span class="material-symbols-outlined text-base">print</span> Cetak Log
         </button>
 
-        <button onclick="window.location.reload()" class="flex items-center justify-center bg-white/20 border border-white/30 hover:bg-white/30 text-white p-2 rounded-lg transition-all shadow-sm cursor-pointer h-[34px] backdrop-blur-sm" title="Refresh Data">
+        <button onclick="fetchActivitiesData(window.location.href);" class="flex items-center justify-center bg-white/20 border border-white/30 hover:bg-white/30 text-white p-2 rounded-lg transition-all shadow-sm cursor-pointer h-[34px] backdrop-blur-sm" title="Refresh Data">
             <span class="material-symbols-outlined text-base">refresh</span>
         </button>
     </div>
 </div>
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+
 
 <!-- Search & Filter Bar -->
 <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6">
-    <form action="{{ route('branch.activities', $branch->id) }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end m-0 p-0">
+    <form action="{{ route('branch.activities', $branch->id) }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end m-0 p-0" onsubmit="event.preventDefault(); fetchActivitiesData(this.action + '?' + new URLSearchParams(new FormData(this)).toString());">
         <input type="hidden" name="date" value="{{ $selectedDate }}">
         
         <div class="md:col-span-6 flex flex-col gap-1.5">
@@ -70,7 +73,7 @@
         <div class="md:col-span-4 flex flex-col gap-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipe Aktivitas</label>
             <div class="relative">
-                <select name="type" onchange="this.form.submit()" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg pl-4 pr-10 py-2 text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer h-[38px]">
+                <select name="type" onchange="fetchActivitiesData('{{ route('branch.activities', $branch->id) }}?' + new URLSearchParams(new FormData(this.form)).toString());" class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg pl-4 pr-10 py-2 text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer h-[38px]">
                     <option value="Semua Tipe" {{ $type === 'Semua Tipe' ? 'selected' : '' }}>Semua Tipe</option>
                     <option value="Penjualan" {{ $type === 'Penjualan' ? 'selected' : '' }}>Penjualan</option>
                     <option value="Restok" {{ $type === 'Restok' ? 'selected' : '' }}>Restok / Update</option>
@@ -82,13 +85,10 @@
             </div>
         </div>
 
-        <div class="md:col-span-2 flex gap-2">
+        <div class="md:col-span-2">
             <button type="submit" class="w-full bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-all shadow-sm cursor-pointer h-[38px]">
                 Filter
             </button>
-            <a href="{{ route('branch.activities', $branch->id) }}?date={{ $selectedDate }}" class="flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-3 h-[38px]" title="Reset Filter">
-                <span class="material-symbols-outlined text-base">restart_alt</span>
-            </a>
         </div>
     </form>
 </div>
@@ -183,4 +183,63 @@
         </table>
     </div>
 </section>
+
+    </div> <!-- End Main Content Wrapper -->
+
+    <!-- Custom Skeleton Wrapper -->
+    <div id="custom-page-skeleton" class="hidden bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8 space-y-6" style="margin-top: 0;">
+        <div class="animate-pulse space-y-6">
+            <div class="h-24 bg-slate-100 rounded-xl w-full"></div>
+            <div class="h-64 bg-slate-100 rounded-xl w-full"></div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
+
+    function fetchActivitiesData(url) {
+        window.customTriggerLoading();
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newContent = doc.getElementById('main-content');
+                if (newContent) {
+                    document.getElementById('main-content').innerHTML = newContent.innerHTML;
+                }
+                
+                const newBanner = doc.querySelector('.greeting-banner');
+                if (newBanner) {
+                    document.querySelector('.greeting-banner').innerHTML = newBanner.innerHTML;
+                }
+                
+                document.title = doc.title;
+                const newPageHeader = doc.querySelector('.page-header');
+                if (newPageHeader) {
+                    const currentPageHeader = document.querySelector('.page-header');
+                    if (currentPageHeader) {
+                        currentPageHeader.innerHTML = newPageHeader.innerHTML;
+                    }
+                }
+                
+                window.history.pushState({path: url}, '', url);
+                window.customRestoreLoading();
+            })
+            .catch(err => {
+                console.error('AJAX fetch failed:', err);
+                window.location.href = url; // Fallback
+            });
+    }
+</script>
+@endpush

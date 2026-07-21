@@ -12,35 +12,17 @@
 
 @section('content')
 @php
-    $agentId = strtolower($branch->agent_id);
-    $bgGradient = 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)'; // default indigo
-    $boxShadow = '0 4px 20px rgba(99,102,241,0.3)';
+    $bgGradient = 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)'; // konsisten biru (indigo)
+    $boxShadow = '0 4px 20px rgba(99,102,241,0.25)';
     $iconColor = '#4f46e5';
-    
-    if ($agentId === 'm1') {
-        $bgGradient = 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'; // red
-        $boxShadow = '0 4px 20px rgba(239,68,68,0.3)';
-        $iconColor = '#dc2626';
-    } elseif ($agentId === 'm2') {
-        $bgGradient = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'; // yellow/amber
-        $boxShadow = '0 4px 20px rgba(245,158,11,0.3)';
-        $iconColor = '#d97706';
-    } elseif ($agentId === 'm3') {
-        $bgGradient = 'linear-gradient(135deg, #10b981 0%, #047857 100%)'; // green
-        $boxShadow = '0 4px 20px rgba(16,185,129,0.3)';
-        $iconColor = '#059669';
-    } elseif ($agentId === 'm4') {
-        $bgGradient = 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'; // blue
-        $boxShadow = '0 4px 20px rgba(59,130,246,0.3)';
-        $iconColor = '#2563eb';
-    } elseif ($agentId === 'm5' || $agentId === 'jy') {
-        $bgGradient = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)'; // purple
-        $boxShadow = '0 4px 20px rgba(139,92,246,0.3)';
-        $iconColor = '#7c3aed';
-    }
+    // Card bawah disamarkan (lebih subtle / clean seperti desain global)
+    $cardBg = '#ffffff'; 
+    $borderColor = '#e2e8f0'; 
+    $hoverBorderColor = '#cbd5e1'; 
+    $headerBg = '#f8fafc'; 
 @endphp
 <!-- Header Actions & Switcher -->
-<div class="greeting-banner mb-6 mt-6 flex-col sm:flex-row items-center justify-between gap-4 rounded-xl" style="background: {{ $bgGradient }}; box-shadow: {{ $boxShadow }}; padding: 16px 20px;">
+<div class="greeting-banner mt-6 flex-col sm:flex-row items-center justify-between gap-4 rounded-t-xl relative z-10" style="background: {{ $bgGradient }}; box-shadow: {{ $boxShadow }}; padding: 16px 20px;">
     <div class="flex flex-wrap items-center justify-between gap-4 w-full" style="position:relative;z-index:1;">
         
         <!-- Left: Title, Address, and Actions -->
@@ -61,13 +43,13 @@
         <div class="flex flex-wrap items-center gap-2">
             
             <!-- Date Picker (Pickdate) -->
-            <form action="{{ route('branch.show', $branch->id) }}" method="GET" class="flex items-center m-0 p-0" id="date-filter-form">
-                <input type="date" name="date" value="{{ $selectedDate }}" onchange="this.form.submit()" class="bg-white/95 border border-white/20 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer h-[32px] shadow-sm">
+            <form action="{{ route('branch.show', $branch->id) }}" method="GET" class="flex items-center m-0 p-0" id="date-filter-form" onsubmit="event.preventDefault(); fetchBranchData(this.action + '?date=' + this.date.value);">
+                <input type="date" name="date" value="{{ $selectedDate }}" onchange="fetchBranchData('{{ route('branch.show', $branch->id) }}?date=' + this.value);" class="bg-white/95 border border-white/20 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer h-[32px] shadow-sm">
             </form>
 
             <!-- Branch Switcher -->
             <div class="relative shadow-sm rounded-lg">
-                <select onchange="window.location.href='/operasional/cabang/' + this.value + '?date={{ $selectedDate }}'" class="appearance-none bg-white/95 border border-white/20 rounded-lg px-3 py-1.5 pr-8 text-[11px] font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer w-32 h-[32px]">
+                <select onchange="fetchBranchData('/operasional/cabang/' + this.value + '?date={{ $selectedDate }}');" class="appearance-none bg-white/95 border border-white/20 rounded-lg px-3 py-1.5 pr-8 text-[11px] font-bold text-slate-800 outline-none focus:ring-1 focus:ring-white cursor-pointer w-32 h-[32px]">
                     @foreach($branchesList as $b)
                         <option value="{{ $b->id }}" {{ $b->id == $branch->id ? 'selected' : '' }}>{{ $b->name }}</option>
                     @endforeach
@@ -76,8 +58,8 @@
             </div>
 
             <!-- Refresh Button -->
-            <button onclick="window.location.reload()" class="flex items-center justify-center bg-white/20 hover:bg-white/30 border border-white/30 text-white w-[32px] h-[32px] rounded-lg transition-all shadow-sm cursor-pointer backdrop-blur-sm" title="Refresh Data">
-                <span class="material-symbols-outlined text-[16px]">refresh</span>
+            <button onclick="fetchBranchData(window.location.href);" class="flex items-center justify-center bg-white/20 hover:bg-white/30 border border-white/30 text-white w-[32px] h-[32px] rounded-lg transition-all shadow-sm cursor-pointer backdrop-blur-sm" title="Refresh Data">
+                <span id="refresh-icon" class="material-symbols-outlined text-[16px]">refresh</span>
             </button>
 
             <!-- Divider -->
@@ -97,11 +79,13 @@
     </div>
 </div>
 
-<!-- Summary Section -->
-<section class="space-y-4 mb-8">
+<!-- Main Content Wrapper -->
+<div id="dashboard-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+    <!-- Summary Section -->
+    <section class="space-y-4 mb-8">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     <!-- Total Penjualan -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm group relative h-[125px] flex items-center">
+    <div class="rounded-xl p-4 shadow-sm group relative h-[125px] flex items-center" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
         <div class="absolute top-4 left-4 h-8 flex items-center">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Penjualan</span>
         </div>
@@ -116,7 +100,7 @@
     </div>
     
     <!-- Total Pelanggan -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm group relative h-[125px] flex items-center">
+    <div class="rounded-xl p-4 shadow-sm group relative h-[125px] flex items-center" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
         <div class="absolute top-4 left-4 h-8 flex items-center">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Pelanggan</span>
         </div>
@@ -132,7 +116,7 @@
     </div>
 
     <!-- Saldo Elektrik -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm {{ $saldoElektrikVal < 1000000 ? 'hover:border-red-300' : 'hover:border-emerald-300' }} hover:shadow-md transition-all group relative h-[125px] flex items-center">
+    <div class="rounded-xl p-4 shadow-sm hover:shadow-md transition-all group relative h-[125px] flex items-center" style="background-color: {{ $cardBg }}; border: 1px solid {{ $saldoElektrikVal < 1000000 ? 'rgba(239,68,68,0.5)' : $borderColor }};">
         <div class="absolute top-4 left-4 h-8 flex items-center">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Saldo Elektrik</span>
         </div>
@@ -151,7 +135,7 @@
     </div>
 
     <!-- Selisih -->
-    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-slate-300 hover:shadow-md transition-all group relative h-[125px] flex items-center">
+    <div class="rounded-xl p-4 shadow-sm hover:shadow-md transition-all group relative h-[125px] flex items-center" style="background-color: {{ $cardBg }}; border: 1px solid {{ $selisihVal < 0 ? 'rgba(239,68,68,0.5)' : $borderColor }};">
         <div class="absolute top-4 left-4 h-8 flex items-center">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Selisih Kas</span>
         </div>
@@ -170,8 +154,8 @@
     <!-- Main Content (Left, 2 columns on XL) -->
     <div class="xl:col-span-2 space-y-6">
 <!-- Rincian Stok Produk -->
-<section class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center gap-2">
+<section class="rounded-xl overflow-hidden shadow-sm" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
+    <div class="px-6 py-4 flex items-center gap-2" style="background-color: {{ $headerBg }}; border-bottom: 1px solid {{ $borderColor }};">
         <span class="material-symbols-outlined text-slate-600 text-sm">inventory_2</span>
         <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Rincian Stok Produk</h3>
     </div>
@@ -227,7 +211,7 @@
             </tbody>
         </table>
     </div>
-    <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+    <div class="p-4 flex justify-end" style="border-top: 1px solid {{ $borderColor }}; background-color: {{ $headerBg }};">
         <a href="{{ route('inventory.index', ['branch' => $branch->name, 'date' => $selectedDate]) }}" class="text-xs font-bold uppercase tracking-wider text-slate-900 hover:text-slate-700 flex items-center gap-1.5">
             Lihat Semua Stok <span class="material-symbols-outlined text-sm font-bold">arrow_forward</span>
         </a>
@@ -235,9 +219,9 @@
 </section>
 
 
-<section class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<section class="rounded-xl overflow-hidden shadow-sm" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
             <div>
-                <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <div class="px-6 py-4 flex items-center justify-between" style="background-color: {{ $headerBg }}; border-bottom: 1px solid {{ $borderColor }};">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-slate-600 text-sm">history_edu</span>
                         <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Log Aktivitas Terbaru</h3>
@@ -335,7 +319,7 @@
                 </div>
             </div>
             
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div class="p-4 flex justify-between items-center" style="border-top: 1px solid {{ $borderColor }}; background-color: {{ $headerBg }};">
                 <span class="text-xs text-slate-500">Real-time update dari cabang {{ $branch->name }}</span>
                 <a href="{{ route('branch.activities', [$branch->id, 'date' => $selectedDate]) }}" class="text-xs font-bold uppercase tracking-wider text-slate-900 hover:text-slate-700 flex items-center gap-1.5">
                     Lihat Detail Aktivitas <span class="material-symbols-outlined text-sm font-bold">arrow_forward</span>
@@ -346,8 +330,8 @@
 
     <!-- Sidebar (Right, 1 column on XL) -->
     <div class="space-y-6">
-<section class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+<section class="rounded-xl overflow-hidden shadow-sm" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
+            <div class="px-6 py-4 flex items-center justify-between" style="background-color: {{ $headerBg }}; border-bottom: 1px solid {{ $borderColor }};">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-slate-600 text-sm">schedule</span>
                     <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Agent Activity</h3>
@@ -373,9 +357,9 @@
         
         
 <!-- Rincian Saldo Laci -->
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+    <div class="rounded-xl overflow-hidden shadow-sm flex flex-col justify-between" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
         <div>
-            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center gap-2">
+            <div class="px-6 py-4 flex items-center gap-2" style="background-color: {{ $headerBg }}; border-bottom: 1px solid {{ $borderColor }};">
                 <span class="material-symbols-outlined text-slate-600 text-sm">payments</span>
                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Rincian Saldo Laci</h3>
             </div>
@@ -439,7 +423,7 @@
             @endif
         </div>
         @if($denominasi['has_data'])
-            <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div class="p-5 flex justify-between items-center" style="border-top: 1px solid {{ $borderColor }}; background-color: {{ $headerBg }};">
                 <span class="text-sm font-bold text-slate-900">Total Cash</span>
                 <span class="text-sm font-extrabold text-slate-900">{{ $denominasi['total'] }}</span>
             </div>
@@ -448,9 +432,9 @@
 
     
 <!-- Detail Pengeluaran -->
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+    <div class="rounded-xl overflow-hidden shadow-sm flex flex-col justify-between" style="background-color: {{ $cardBg }}; border: 1px solid {{ $borderColor }};">
         <div>
-            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+            <div class="px-6 py-4 flex items-center justify-between" style="background-color: {{ $headerBg }}; border-bottom: 1px solid {{ $borderColor }};">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-slate-600 text-sm">receipt_long</span>
                     <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Detail Pengeluaran</h3>
@@ -474,7 +458,7 @@
                 @endforeach
             </div>
         </div>
-        <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <div class="p-5 flex justify-between items-center" style="border-top: 1px solid {{ $borderColor }}; background-color: {{ $headerBg }};">
             <span class="text-sm font-bold text-commander-error">Total Pengeluaran</span>
             <span class="text-sm font-extrabold text-commander-error">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</span>
         </div>
@@ -491,6 +475,29 @@
             </div>
         </div>
     </div>
+</div>
+</div> <!-- End Main Content Wrapper -->
+
+<!-- Skeleton Loading (Hidden by Default) -->
+<div id="dashboard-skeleton" class="hidden bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-pulse">
+        @for($i = 0; $i < 4; $i++)
+        <div class="rounded-xl p-4 border border-slate-100 bg-slate-50/50 h-[125px] flex flex-col justify-center">
+            <div class="h-3 bg-slate-200/60 rounded w-1/3 mb-4"></div>
+            <div class="h-6 bg-slate-200/60 rounded w-2/3"></div>
+        </div>
+        @endfor
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-pulse">
+        <div class="xl:col-span-2 space-y-6">
+            <div class="h-[250px] bg-slate-50/50 rounded-xl border border-slate-100"></div>
+            <div class="h-[350px] bg-slate-50/50 rounded-xl border border-slate-100"></div>
+        </div>
+        <div class="space-y-6">
+            <div class="h-[200px] bg-slate-50/50 rounded-xl border border-slate-100"></div>
+            <div class="h-[250px] bg-slate-50/50 rounded-xl border border-slate-100"></div>
+            <div class="h-[150px] bg-slate-50/50 rounded-xl border border-slate-100"></div>
+        </div>
     </div>
 </div>
 
@@ -547,6 +554,53 @@
 
 @push('scripts')
 <script>
+    function showSkeletonAndNavigate() {
+        document.getElementById('dashboard-content').classList.add('hidden');
+        document.getElementById('dashboard-skeleton').classList.remove('hidden');
+        
+        const refreshIcon = document.getElementById('refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('animate-[spin_1s_linear_infinite]');
+    }
+
+    function fetchBranchData(url) {
+        showSkeletonAndNavigate();
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Update Main Content
+                const newContent = doc.getElementById('dashboard-content');
+                if (newContent) {
+                    document.getElementById('dashboard-content').innerHTML = newContent.innerHTML;
+                }
+                
+                // Update Banner/Header specifically so date/branch dropdowns stay in sync
+                const newBanner = doc.querySelector('.greeting-banner');
+                if (newBanner) {
+                    document.querySelector('.greeting-banner').innerHTML = newBanner.innerHTML;
+                }
+                
+                // Update Page Title
+                document.title = doc.title;
+                const newPageHeader = doc.querySelector('.page-header');
+                if (newPageHeader) {
+                    const currentPageHeader = document.querySelector('.page-header');
+                    if (currentPageHeader) {
+                        currentPageHeader.innerHTML = newPageHeader.innerHTML;
+                    }
+                }
+                
+                window.history.pushState({path: url}, '', url);
+                window.customRestoreLoading();
+            })
+            .catch(err => {
+                console.error('AJAX fetch failed:', err);
+                window.location.href = url; // Fallback to full reload
+            });
+    }
+
     function openEditBranchModal(branch) {
         document.getElementById('edit_branch_name').value = branch.name;
         document.getElementById('edit_branch_agent_id').value = branch.agent_id || '';
@@ -561,5 +615,16 @@
     function closeEditBranchModal() {
         document.getElementById('edit-branch-modal').classList.add('hidden');
     }
+
+    window.customTriggerLoading = function() {
+        showSkeletonAndNavigate();
+    };
+
+    window.customRestoreLoading = function() {
+        document.getElementById('dashboard-content').classList.remove('hidden');
+        document.getElementById('dashboard-skeleton').classList.add('hidden');
+        const refreshIcon = document.getElementById('refresh-icon');
+        if (refreshIcon) refreshIcon.classList.remove('animate-[spin_1s_linear_infinite]');
+    };
 </script>
 @endpush

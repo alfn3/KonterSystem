@@ -1212,7 +1212,25 @@ class ApiTransactionController extends Controller
             }
         }
 
-        return response()->json($recon, 200);
+        return response()->json([
+            'id' => $recon->id,
+            'name' => $recon->name,
+            'shift' => $recon->shift,
+            'sales' => (double)$recon->sales,
+            'gap' => (double)$recon->gap,
+            'bon' => (double)$recon->bon,
+            'incentive' => (double)$recon->incentive,
+            'status' => $recon->status,
+        ], 200);
+    }
+
+    public function deleteClosing()
+    {
+        CashierReconciliation::where('name', 'Andini (Kasir)')
+            ->whereDate('created_at', now()->toDateString())
+            ->delete();
+
+        return response()->json(['success' => true, 'message' => 'Closing record deleted successfully'], 200);
     }
 
     public function getClosing()
@@ -1394,6 +1412,16 @@ class ApiTransactionController extends Controller
     {
         if ($branch) {
             $branch->update(['last_active_at' => now()]);
+        }
+    }
+
+    public function getEmployees()
+    {
+        try {
+            $employees = \App\Models\Employee::where('status', 'aktif')->orderBy('name', 'asc')->get(['id', 'name', 'role']);
+            return response()->json($employees);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

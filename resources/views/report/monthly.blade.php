@@ -6,7 +6,7 @@
 @section('content')
 
     <!-- Report Period Selector & Controls Bar (Premium Banner) -->
-    <div class="greeting-banner mb-6 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
         <div class="flex items-center gap-3" style="position:relative;z-index:1;">
             <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-white/20 border border-white/30 backdrop-blur-sm shadow-sm shrink-0">
                 <span class="material-symbols-outlined text-white text-[20px]" style="font-variation-settings:'FILL' 1;">analytics</span>
@@ -28,6 +28,20 @@
             </button>
         </div>
     </div>
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+            <div class="h-32 bg-slate-50 border border-slate-100 rounded-xl"></div>
+        </div>
+        <div class="h-64 bg-slate-50 border border-slate-100 rounded-xl"></div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8 space-y-6" style="margin-top: 0;">
+
 
     <!-- Executive Summary Cards -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -231,4 +245,19 @@
         </div>
     </div>
 
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection
+
+@push('scripts')
+<script>
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
+</script>
+@endpush

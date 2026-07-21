@@ -79,7 +79,7 @@
     </div>
 
     <!-- Filters & Search Bar (Premium Banner) -->
-    <div class="greeting-banner mb-6" style="padding: 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10" style="padding: 20px;">
         <form action="{{ route('qris.index') }}" method="GET" class="flex flex-wrap items-end gap-4 m-0 p-0 w-full" style="position:relative;z-index:1;">
             <!-- Search ID/Pelanggan -->
             <div class="flex-1 min-w-[200px]">
@@ -143,6 +143,19 @@
             </div>
         </form>
     </div>
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+        <div class="space-y-3">
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+
 
     <!-- Data Table Card -->
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -320,6 +333,8 @@
         </div>
     </div>
 
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')
@@ -441,5 +456,13 @@
     function closeDetailModal() {
         document.getElementById('detail-modal').classList.add('hidden');
     }
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
 </script>
 @endpush

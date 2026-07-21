@@ -42,7 +42,7 @@
     </div>
 
     <!-- Controls / Search Bar (Premium Banner) -->
-    <div class="greeting-banner mb-6" style="padding: 16px 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10" style="padding: 16px 20px;">
         <div class="flex items-center gap-4 w-full">
             <!-- Left Group: Search -->
             <form action="{{ route('device.index') }}" method="GET" class="flex items-center gap-3 flex-1 m-0 p-0" style="position:relative;z-index:1;">
@@ -57,6 +57,9 @@
             </form>
         </div>
     </div>
+    <!-- Main Content Wrapper -->
+    <div class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+
 
     <!-- Data Table Card -->
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -123,4 +126,6 @@
         </div>
     </div>
 
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection

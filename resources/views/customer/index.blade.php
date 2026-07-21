@@ -6,7 +6,7 @@
 @section('content')
 
     <!-- Controls, Filter & Search (Premium Banner) -->
-    <div class="greeting-banner mb-6 flex-col lg:flex-row items-end justify-between gap-4" style="padding: 20px;">
+    <div class="greeting-banner mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col lg:flex-row items-end justify-between gap-4" style="padding: 20px;">
         <!-- Left Group: Search & Filter -->
         <form action="{{ route('customer.index') }}" method="GET" class="flex flex-wrap items-end gap-3 flex-1 min-w-[280px] m-0 p-0" style="position:relative;z-index:1;">
             <!-- Search input -->
@@ -47,6 +47,9 @@
             </button>
         </div>
     </div>
+    <!-- Main Content Wrapper -->
+    <div class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+
 
     <!-- Data Table Card -->
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -238,6 +241,8 @@
         </div>
     </div>
 
+
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')

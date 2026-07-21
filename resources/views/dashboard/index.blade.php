@@ -54,16 +54,17 @@
 @section('content')
 
     {{-- ── Greeting Banner ── --}}
-    <section id="greeting-alert" class="greeting-banner mb-6">
+    <!-- Greeting / Notification Banner -->
+    <div id="greeting-alert" class="greeting-banner mb-8 rounded-2xl relative z-10 shadow-lg" style="padding: 24px 32px;">
         <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:10px;flex-shrink:0;">
             <span class="material-symbols-outlined text-white text-2xl"
                   style="font-variation-settings:'FILL' 1;display:block;">campaign</span>
         </div>
         <div class="flex-1" style="position:relative;z-index:1;">
-            <h2 style="font-size:16px;font-weight:700;color:white;margin-bottom:2px;">
+            <h2 style="font-size:18px;font-weight:700;color:white;margin-bottom:2px;">
                 Halo {{ $greeting['user'] }} 👋
             </h2>
-            <p style="font-size:12.5px;color:rgba(255,255,255,0.8);">
+            <p style="font-size:13px;color:rgba(255,255,255,0.8);">
                 <strong style="color:white;">{{ $greeting['alert_title'] }}:</strong>
                 {{ $greeting['alert_message'] }}
             </p>
@@ -82,7 +83,10 @@
                 <span class="material-symbols-outlined" style="font-size:16px;">close</span>
             </button>
         </div>
-    </section>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm mb-8 space-y-6">
 
     {{-- ── Metric Pulse Section ── --}}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
@@ -231,6 +235,7 @@
         </div>
     </div>
 
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')

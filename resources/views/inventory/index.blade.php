@@ -41,7 +41,7 @@
 @section('content')
 
     <!-- Filter & Controls (Styled as Premium Banner) -->
-    <div class="greeting-banner banner-inventory mb-6 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
+    <div class="greeting-banner banner-inventory mb-0 rounded-t-xl rounded-b-none relative z-10 flex-col sm:flex-row items-center justify-between gap-4" style="padding: 16px 20px;">
         <div class="flex items-center gap-2 w-full sm:w-auto" style="position:relative;z-index:1;">
             <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/95 border border-white/20 rounded-lg shadow-sm">
                 <span class="material-symbols-outlined text-sm text-indigo-600">store</span>
@@ -83,6 +83,21 @@
             </button>
         </div>
     </div>
+
+    <!-- Custom Page Skeleton Loader (Hidden by Default) -->
+    <div id="custom-page-skeleton" class="hidden w-full animate-pulse bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
+        <div class="h-10 bg-slate-100 rounded w-full mb-4"></div>
+        <div class="space-y-3">
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+            <div class="h-12 bg-slate-50 border border-slate-100 rounded"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="bg-white p-4 sm:p-6 rounded-b-xl border border-slate-200 border-t-0 shadow-sm mb-8" style="margin-top: 0;">
 
 
 
@@ -516,6 +531,7 @@
         </div>
     </div>
 
+    </div> <!-- End Main Content Wrapper -->
 @endsection
 
 @push('scripts')
@@ -808,6 +824,7 @@
         const selectedValue = selector.value;
         const dateEl = document.getElementById('date-selector');
         const dateValue = dateEl ? dateEl.value : "{{ $selectedDate }}";
+        if (typeof window.triggerGlobalLoading === 'function') window.triggerGlobalLoading();
         window.location.href = "{{ route('inventory.index') }}?branch=" + encodeURIComponent(selectedValue) + "&date=" + encodeURIComponent(dateValue);
     }
 
@@ -816,6 +833,7 @@
         const branchValue = selector ? selector.value : "{{ $selectedBranch }}";
         const dateEl = document.getElementById('date-selector');
         const dateValue = dateEl ? dateEl.value : "";
+        if (typeof window.triggerGlobalLoading === 'function') window.triggerGlobalLoading();
         window.location.href = "{{ route('inventory.index') }}?branch=" + encodeURIComponent(branchValue) + "&date=" + encodeURIComponent(dateValue);
     }
 
@@ -962,5 +980,14 @@
             nameInput.addEventListener('input', generateSku);
         }
     });
+
+    window.customTriggerLoading = function() {
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('custom-page-skeleton').classList.remove('hidden');
+    };
+    window.customRestoreLoading = function() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('custom-page-skeleton').classList.add('hidden');
+    };
 </script>
 @endpush
